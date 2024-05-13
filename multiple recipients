@@ -1,0 +1,48 @@
+const AWS = require('aws-sdk');
+require('dotenv').config();
+
+const SES_CONFIG = {
+    accessKeyId: '',
+    secretAccessKey: 'EVkx6v0DCJz2Odlfd28GjP3Pm9cYvHpRfagNwDli',
+    region: 'ap-south-1',    
+};
+
+
+const AWS_SES = new AWS.SES (SES_CONFIG);
+
+
+const sendEmailSES = async (recipientEmails, subject) => {
+    let params = {
+        Source: "ganeshshivgan24@gmail.com",
+        Destination: {
+            ToAddresses: recipientEmails, // Array of recipient email addresses
+        },
+        Message: {
+            Body: {
+                Html: {
+                    Charset: 'UTF-8',
+                    Data: '<h1>This is the body of my email!</h1>',
+                },
+                Text: {
+                    Charset: "UTF-8",
+                    Data: "This is the body of my email!"
+                }
+            },
+            Subject: {
+                Charset: 'UTF-8',
+                Data: subject,
+            }
+        },
+    };
+    try {
+        const res = await AWS_SES.sendEmail(params).promise();
+        console.log('Email has been sent!', res);
+    } catch (error) {
+        console.error(error);
+    }
+}
+
+const subject = `Test Email - ${new Date().toLocaleString()}`;
+const recipients = ["shivgan.ganesh@yahoo.com","ganeshshivgan24@gmail.com"]; // Array of recipient email addresses
+sendEmailSES(recipients, subject);
+
