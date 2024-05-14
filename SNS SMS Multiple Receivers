@@ -1,0 +1,39 @@
+const AWS = require('aws-sdk');
+require('dotenv').config();
+
+const SNS_CONFIG = {
+    accessKeyId: '',
+    secretAccessKey: '',
+    region: 'ap-south-1',    
+};
+
+const AWS_SNS = new AWS.SNS(SNS_CONFIG);
+
+const sendSMSviaSNS = async (req, res) => {
+    const { phoneNumbers, message } = req.body;
+
+    if (!phoneNumbers || !Array.isArray(phoneNumbers) || phoneNumbers.length === 0 || !message) {
+        return res.status(400).send('Invalid parameters');
+    }
+
+    let params = {
+        Message: message,
+        PhoneNumber: '',
+    };
+
+    try {
+        for (let phoneNumber of phoneNumbers) {
+            params.PhoneNumber = phoneNumber;
+            const result = await AWS_SNS.publish(params).promise();
+            console.log(`SMS has been sent to ${phoneNumber}!`, result);
+        }
+        res.status(200).send('SMS sent successfully');
+    } catch (error) {
+        console.error('Error sending SMS:', error);
+        res.status(500).send('Internal server error');
+    }
+};
+
+module.exports = {
+    sendSMSviaSNS,
+}
