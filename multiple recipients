@@ -11,38 +11,51 @@ const SES_CONFIG = {
 const AWS_SES = new AWS.SES (SES_CONFIG);
 
 
-const sendEmailSES = async (recipientEmails, subject) => {
+const sendEmailSES= async (req, res) => {
+    const { recipients, subject, meetLink } = req.body;
+
+    if (!recipients || !subject || !meetLink) {
+        return res.status(400).send('Missing parameters');
+    }
+
     let params = {
         Source: "ganeshshivgan24@gmail.com",
         Destination: {
-            ToAddresses: recipientEmails, // Array of recipient email addresses
+            ToAddresses: recipients, // Array of recipient email addresses
         },
         Message: {
             Body: {
-                Html: {
-                    Charset: 'UTF-8',
-                    Data: '<h1>This is the body of my email!</h1>',
-                },
                 Text: {
                     Charset: "UTF-8",
-                    Data: "This is the body of my email!"
+                    Data: `This is AWS mailing service.\n\nThis is the body of my email!\n\nJoin the Google Meet: ${meetLink}`
                 }
             },
             Subject: {
                 Charset: 'UTF-8',
-                Data: subject,
+                Data: subject ,
             }
         },
     };
     try {
-        const res = await AWS_SES.sendEmail(params).promise();
-        console.log('Email has been sent!', res);
+        const result = await AWS_SES.sendEmail(params).promise();
+        console.log('Email has been sent!', result);
+        res.status(200).send('Email sent successfully');
     } catch (error) {
-        console.error(error);
+        console.error('Error sending email:', error);
+        res.status(500).send('Internal server error');
     }
-}
+};
 
-const subject = `Test Email - ${new Date().toLocaleString()}`;
-const recipients = ["shivgan.ganesh@yahoo.com","ganeshshivgan24@gmail.com"]; // Array of recipient email addresses
-sendEmailSES(recipients, subject);
+
+module.exports = {
+    sendEmailSES,
+    }
+
+
+
+{
+  "recipients": ["ganeshshivgan24@gmail.com", "shivgan.ganesh@yahoo.com"],
+  "subject": "Test _Email",
+  "meetLink": "https://meet.google.com/pqd-xkib-phy"    
+}
 
